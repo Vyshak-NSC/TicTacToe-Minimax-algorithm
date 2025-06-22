@@ -24,7 +24,8 @@ function renderBoard(){
 
 // Check the boaerd state for winner
 function checkWinner(){
-    // checking if game is in terminal state   
+    // checking if game is in terminal state  
+    if(gameState === 0) return; // game over, do nothing 
     const winner = wincombo.find(([a,b,c]) => {
         return state[a] === state[b] && 
         state[a] === state[c] && 
@@ -33,7 +34,7 @@ function checkWinner(){
 
     if(winner || !state.includes('')){
         gameState = 0; // game over
-        // disableBoard();
+        disableBoard();
 
         if (winner){
             announceMsg(`Player ${state[winner[0]]} wins!`);
@@ -41,6 +42,7 @@ function checkWinner(){
                 cells[index].classList.add('winner'); // highlight winning cells
             });
         }else{
+            gameState = 0; // game over
             announceMsg("It's a Draw!");
             cells.forEach(cell => {
                 cell.classList.add('draw');
@@ -68,13 +70,12 @@ function resetGame(){
     announceMsg("Game Start")
 }
 
-// function disableBoard(){
-//     If game is over, disable all cells
-//     cells.forEach(cell => {
-//         cell.checked = true;
-//         cell.disabled = true;
-//     });
-// }
+function disableBoard(){
+    // If game is over, disable all cells
+    cells.forEach(cell => {
+        cell.disabled = true;
+    });
+}
 
 function announceMsg(msg){
     // Game messages
