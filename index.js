@@ -105,7 +105,6 @@ document.addEventListener('DOMContentLoaded',() =>{
 
             // Check th eboard state. update board if in non terminal state
             checkWinner();
-            
         })
     });
 
