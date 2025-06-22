@@ -42,6 +42,9 @@ function checkWinner(){
             });
         }else{
             announceMsg("It's a Draw!");
+            cells.forEach(cell => {
+                cell.classList.add('draw');
+            })
         }
 
         // reset the game after 2 s delay
@@ -56,7 +59,7 @@ function resetGame(){
         cell.setAttribute('data-player','');
         cell.checked = false;
         cell.disabled = false;
-        cell.classList.remove('winner');
+        cell.classList.remove('winner','draw');
     });
 
     // Reet the game state

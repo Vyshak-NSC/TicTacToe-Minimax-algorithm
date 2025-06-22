@@ -83,14 +83,22 @@
 }
 
 .winner{
-    background-color: #15e38a;
     color: white;
-    animation: win 1s ease-in-out infinite;
+    animation: win 0.5s ease-in-out infinite;
+}
+
+.draw{
+    color: black;
+    animation: tie .7s ease-in-out infinite;
 }
 
 @keyframes win {
-    0%   {background-color: #15e38a;}
-    50%  {background-color: white;}
-    100% {background-color: #15e38a;}
+    from {background-color: white;}
+    to   {background-color: #15e38a;}
+}
+
+@keyframes tie {
+    from {background-color: white;}
+    to   {background-color: #dfa8a8;}
 }
 
