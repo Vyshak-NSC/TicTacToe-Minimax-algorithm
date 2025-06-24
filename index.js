@@ -64,14 +64,10 @@ function checkWinner(){
 
         if (winner){
             announceMsg(`Player ${state[winner[0]]} wins!`);
-            // announceMsg(`Player ${winner} wins!`);
             winner.forEach(index => {
-                if(state[index] === 'X'){
-                    cells[index].classList.add('winner-x'); // highlight winning cells
-                }else{
-                    cells[index].classList.add('winner-o'); // highlight winning cells
-                }
-            });
+                // add appropriate highlight for win case of X or O
+                cells[index].classList.add(state[index] === 'X' ? 'winner-x' : 'winner-o');
+            })
         }else{
             announceMsg("It's a Draw!");
             cells.forEach(cell => {
@@ -83,6 +79,7 @@ function checkWinner(){
         setTimeout(resetGame,2000);
     }
 }
+
 
 function announceMsg(msg){
     // Game messages
@@ -101,14 +98,13 @@ function bestMove(){
     // declared locally to prevent scope errors
     let bestScore = -Infinity;
     let move;
-    let score = 0;
+    // let score = 0;
 
     for(let i=0;i<state.length; i++){
         if(state[i]===''){
-
             // add a simulated value, remove after minimax result for index has been obtained
             state[i] = 'O';
-            score = minimax(state,false,0);
+            let score = minimax(state,false,0, -Infinity, Infinity);
             state[i] = '';
 
             if(score>bestScore){
@@ -117,10 +113,12 @@ function bestMove(){
             }
         }
     }
-    state[move] = 'O';
-    checkWinner()
-    renderBoard();
-    currentPlayer = 'X'
+    setTimeout(() => {
+        state[move] = 'O';
+        checkWinner()
+        renderBoard();
+        currentPlayer = 'X'
+    },500)
 }
 
 // track score assignement for minimax
@@ -130,7 +128,7 @@ let getScore = {
     null:0
 }
 
-function minimax(state, ismaximising, depth){
+function minimax(state, ismaximising, depth, alpha, beta){
     let win = getWinner(state), score;
     if(win !== null){
         score = getScore[state[win[0]]];
@@ -147,10 +145,14 @@ function minimax(state, ismaximising, depth){
         for(let i=0;i<state.length;i++){
             if(state[i]===''){
                 state[i] = 'O'// ai
-                let score = minimax(state,false,depth+1);
+                let score = minimax(state,false,depth+1, alpha, beta);
                 state[i]='';
-
                 bestScore = Math.max(score,bestScore)
+
+                // calculate alpha-beta pruning
+                alpha = Math.max(alpha, score);
+                if(beta <= alpha)
+                    break;
             }
         }
         return bestScore;
@@ -162,10 +164,13 @@ function minimax(state, ismaximising, depth){
         for(let i=0;i<state.length;i++){
             if(state[i]===''){
                 state[i] = 'X'// ai
-                let score = minimax(state,true,depth+1);
+                let score = minimax(state,true,depth+1, alpha, beta);
                 state[i]='';
-                
+                // calculate alpha-beta pruning
                 bestScore = Math.min(score,bestScore)
+                beta = Math.min(beta,score);
+                if(beta <= alpha) 
+                    break;
             }
         }
         return bestScore;
