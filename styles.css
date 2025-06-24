@@ -70,8 +70,7 @@
     box-shadow: 
             inset -2px -5px 5px rgba(50, 50, 50, 0.5),
              2px -5px 5px rgba(70,70, 70, 0.12);
-    
-    -webkit-appearance: none;
+    appearance: none;
     transition: all 0.2s ease;
 }
 
@@ -91,9 +90,13 @@
     content: attr(data-player);
 }
 
-.winner{
+.winner-x{
     color: white;
     animation: win 0.7s ease-in-out infinite;
+}
+.winner-o{
+    color: black;
+    animation: loose .7s ease-in-out infinite;
 }
 
 .draw{
@@ -101,13 +104,19 @@
     animation: tie .7s ease-in-out infinite;
 }
 
+
 @keyframes win {
     from {background-color: white;}
     to   {background-color: #15e38a;}
 }
 
+@keyframes loose {
+    from {background-color: white;}
+    to   {background-color: #e5b4b4;}
+}
+
 @keyframes tie {
     from {background-color: white;}
-    to   {background-color: #dda8a8;}
+    to   {background-color: #eed5a4;}
 }
 

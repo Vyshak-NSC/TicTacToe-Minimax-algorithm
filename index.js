@@ -37,7 +37,7 @@ function resetGame(){
         cell.setAttribute('data-player','');
         cell.checked = false;
         cell.disabled = false;
-        cell.classList.remove('winner','draw');
+        cell.classList.remove('winner-x','winner-o','draw');
     });
 
     // Reet the game state
@@ -66,7 +66,11 @@ function checkWinner(){
             announceMsg(`Player ${state[winner[0]]} wins!`);
             // announceMsg(`Player ${winner} wins!`);
             winner.forEach(index => {
-                cells[index].classList.add('winner'); // highlight winning cells
+                if(state[index] === 'X'){
+                    cells[index].classList.add('winner-x'); // highlight winning cells
+                }else{
+                    cells[index].classList.add('winner-o'); // highlight winning cells
+                }
             });
         }else{
             announceMsg("It's a Draw!");
