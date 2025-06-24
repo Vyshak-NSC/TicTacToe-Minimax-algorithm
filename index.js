@@ -23,6 +23,29 @@ function renderBoard(){
     })
 }
 
+function disableBoard(){
+    // If game is over, disable all cells
+    cells.forEach(cell => {
+        cell.disabled = true;
+    });
+}
+
+function resetGame(){
+    // Reset the cell value and its state
+    gameState = 1; // playable
+    cells.forEach(cell => {
+        cell.setAttribute('data-player','');
+        cell.checked = false;
+        cell.disabled = false;
+        cell.classList.remove('winner','draw');
+    });
+
+    // Reet the game state
+    state.fill(''); 
+    currentPlayer = "X";
+    announceMsg("Game Start")
+}
+
 function getWinner(board){
     let win = wincombo.find(([a,b,c]) => {
         return board[a] === board[b] && board[a] === board[c] && board[a] !== ''
@@ -57,18 +80,31 @@ function checkWinner(){
     }
 }
 
+function announceMsg(msg){
+    // Game messages
+    // Delay the messaeg by 0.1s after reset. Then display the msg for 2s
+    setTimeout(() => {
+        message.textContent = msg;
+        setTimeout(function() {
+            message.textContent = '';
+        }, 2000);
+    }, 500);
+}
+
 function bestMove(){
     if (gameState === 0) return;
     
+    // declared locally to prevent scope errors
     let bestScore = -Infinity;
     let move;
     let score = 0;
 
     for(let i=0;i<state.length; i++){
         if(state[i]===''){
+
+            // add a simulated value, remove after minimax result for index has been obtained
             state[i] = 'O';
             score = minimax(state,false,0);
-            // console.log('Score:',score);
             state[i] = '';
 
             if(score>bestScore){
@@ -78,12 +114,12 @@ function bestMove(){
         }
     }
     state[move] = 'O';
-    cells[move].setAttribute('data-player', 'O');
     checkWinner()
     renderBoard();
     currentPlayer = 'X'
 }
 
+// track score assignement for minimax
 let getScore = {
     'X':-1,
     'O':1,
@@ -96,7 +132,7 @@ function minimax(state, ismaximising, depth){
         score = getScore[state[win[0]]];
         return score;
     }
-
+    // check for draw
     if(!state.includes('')){
         return 0;
     }
@@ -104,7 +140,6 @@ function minimax(state, ismaximising, depth){
     // if it is AI's turn: maximise --> go fo highest score
     if(ismaximising){
         let bestScore = -Infinity;
-        // score = 0;
         for(let i=0;i<state.length;i++){
             if(state[i]===''){
                 state[i] = 'O'// ai
@@ -114,13 +149,11 @@ function minimax(state, ismaximising, depth){
                 bestScore = Math.max(score,bestScore)
             }
         }
-        // console.log('Best Max Score:',bestScore);
         return bestScore;
     }
     
     // if it is player's turn: minimise -> go for lowest score
     else{
-        // score = 0;
         let bestScore = Infinity;
         for(let i=0;i<state.length;i++){
             if(state[i]===''){
@@ -131,43 +164,8 @@ function minimax(state, ismaximising, depth){
                 bestScore = Math.min(score,bestScore)
             }
         }
-        // console.log('Best Min Score:',bestScore);
         return bestScore;
     }
-}
-
-function resetGame(){
-    // Reset the cell value and its state
-    gameState = 1; // playable
-    cells.forEach(cell => {
-        cell.setAttribute('data-player','');
-        cell.checked = false;
-        cell.disabled = false;
-        cell.classList.remove('winner','draw');
-    });
-
-    // Reet the game state
-    state.fill(''); 
-    currentPlayer = "X";
-    announceMsg("Game Start")
-}
-
-function disableBoard(){
-    // If game is over, disable all cells
-    cells.forEach(cell => {
-        cell.disabled = true;
-    });
-}
-
-function announceMsg(msg){
-    // Game messages
-    // Delay the messaeg by 0.1s after reset. Then display the msg for 2s
-    setTimeout(() => {
-        message.textContent = msg;
-        setTimeout(function() {
-            message.textContent = '';
-        }, 2000);
-    }, 500);
 }
 
 // initiate the game board
