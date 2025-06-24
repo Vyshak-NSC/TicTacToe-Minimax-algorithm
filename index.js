@@ -1,7 +1,10 @@
 let state = Array(9).fill('');
 let cells;
-let currentPlayer = 'X'
 let message = document.getElementById('message')
+const PLAYER = 'X';
+const COMPUTER = 'O';
+
+let currentPlayer = PLAYER
 gameState = 1; // playable
 
 const wincombo =[
@@ -37,7 +40,7 @@ function resetGame(){
         cell.setAttribute('data-player','');
         cell.checked = false;
         cell.disabled = false;
-        cell.classList.remove('winner-x','winner-o','draw');
+        cell.classList.remove('winner-player','winner-computer','draw');
     });
 
     // Reet the game state
@@ -66,7 +69,7 @@ function checkWinner(){
             announceMsg(`Player ${state[winner[0]]} wins!`);
             winner.forEach(index => {
                 // add appropriate highlight for win case of X or O
-                cells[index].classList.add(state[index] === 'X' ? 'winner-x' : 'winner-o');
+                cells[index].classList.add(state[index] === PLAYER ? 'winner-player' : 'winner-computer');
             })
         }else{
             announceMsg("It's a Draw!");
@@ -103,8 +106,8 @@ function bestMove(){
     for(let i=0;i<state.length; i++){
         if(state[i]===''){
             // add a simulated value, remove after minimax result for index has been obtained
-            state[i] = 'O';
-            let score = minimax(state,false,0, -Infinity, Infinity);
+            state[i] = COMPUTER;
+            let score = -negamax(state,0, -Infinity, Infinity,-1);
             state[i] = '';
 
             if(score>bestScore){
@@ -114,67 +117,42 @@ function bestMove(){
         }
     }
     setTimeout(() => {
-        state[move] = 'O';
+        state[move] = COMPUTER;
         checkWinner()
         renderBoard();
-        currentPlayer = 'X'
+        currentPlayer = PLAYER
     },500)
 }
 
 // track score assignement for minimax
 let getScore = {
-    'X':-1,
-    'O':1,
+    [PLAYER]:-1,
+    [COMPUTER]:1,
     null:0
 }
 
-function minimax(state, ismaximising, depth, alpha, beta){
-    let win = getWinner(state), score;
-    if(win !== null){
-        score = getScore[state[win[0]]];
-        return score;
-    }
-    // check for draw
-    if(!state.includes('')){
-        return 0;
-    }
 
-    // if it is AI's turn: maximise --> go fo highest score
-    if(ismaximising){
-        let bestScore = -Infinity;
-        for(let i=0;i<state.length;i++){
-            if(state[i]===''){
-                state[i] = 'O'// ai
-                let score = minimax(state,false,depth+1, alpha, beta);
-                state[i]='';
-                bestScore = Math.max(score,bestScore)
+function negamax(state, depth, alpha, beta, color){
+    let win = getWinner(state);
+    if(win!==null){
+        return color * (getScore[state[win[0]]] * (10 - depth));
+    }
+    if(!state.includes('')) return 0;
 
-                // calculate alpha-beta pruning
-                alpha = Math.max(alpha, score);
-                if(beta <= alpha)
-                    break;
-            }
+    let bestScore = -Infinity;
+    for(let i = 0;i < state.length; i++){
+        if(state[i] === ''){
+            state[i] = color === 1 ? COMPUTER : PLAYER;
+            let score = -negamax(state, depth+1, -beta, -alpha, -color);
+            state[i] = '';
+            bestScore = Math.max(score, bestScore);
+
+            // alpha beta pruning
+            alpha = Math.max(alpha,score);
+            if(beta <= alpha) break;
         }
-        return bestScore;
     }
-    
-    // if it is player's turn: minimise -> go for lowest score
-    else{
-        let bestScore = Infinity;
-        for(let i=0;i<state.length;i++){
-            if(state[i]===''){
-                state[i] = 'X'// ai
-                let score = minimax(state,true,depth+1, alpha, beta);
-                state[i]='';
-                // calculate alpha-beta pruning
-                bestScore = Math.min(score,bestScore)
-                beta = Math.min(beta,score);
-                if(beta <= alpha) 
-                    break;
-            }
-        }
-        return bestScore;
-    }
+    return bestScore;
 }
 
 // initiate the game board
@@ -183,13 +161,13 @@ document.addEventListener('DOMContentLoaded',() =>{
     cells.forEach((cell,index) => {
         cell.addEventListener('click',() => {
             // prevent overwriting a cell
-            if(gameState ===0 || state[index] || currentPlayer === 'O') return
+            if(gameState ===0 || state[index] || currentPlayer === COMPUTER) return
             
             // Update the cell state and current player
-            state[index] = 'X'
-            cell.setAttribute('data-player', 'X');
+            state[index] = PLAYER
+            cell.setAttribute('data-player', PLAYER);
             cell.disabled = true;
-            currentPlayer = 'X';
+            currentPlayer = PLAYER;
             // Check th eboard state. update board if in non terminal state
             checkWinner();
             setTimeout(bestMove,0);
