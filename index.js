@@ -1,5 +1,5 @@
 let state = Array(9).fill('');
-let cells
+let cells;
 let currentPlayer = 'X'
 let message = document.getElementById('message')
 gameState = 1; // playable
@@ -12,9 +12,10 @@ const wincombo =[
 
 // Diplay board
 function renderBoard(){
+    // console.log('State:',state);
     cells.forEach((cell,index) =>{
         // Disable cell if played in tht cell
-        if(state[index] !==''){
+        if(state[index] !== ''){
             cell.setAttribute('data-player', state[index]);
             cell.checked = true;
             cell.disabled = true;
@@ -22,27 +23,29 @@ function renderBoard(){
     })
 }
 
+function getWinner(board){
+    let win = wincombo.find(([a,b,c]) => {
+        return board[a] === board[b] && board[a] === board[c] && board[a] !== ''
+    })
+    return win ? win : null;
+}
+
 // Check the boaerd state for winner
 function checkWinner(){
     // checking if game is in terminal state  
     if(gameState === 0) return; // game over, do nothing 
-    const winner = wincombo.find(([a,b,c]) => {
-        return state[a] === state[b] && 
-        state[a] === state[c] && 
-        state[a] !== ''
-    })
-
+    const winner = getWinner(state);
     if(winner || !state.includes('')){
         gameState = 0; // game over
         disableBoard();
 
         if (winner){
             announceMsg(`Player ${state[winner[0]]} wins!`);
+            // announceMsg(`Player ${winner} wins!`);
             winner.forEach(index => {
                 cells[index].classList.add('winner'); // highlight winning cells
             });
         }else{
-            gameState = 0; // game over
             announceMsg("It's a Draw!");
             cells.forEach(cell => {
                 cell.classList.add('draw');
@@ -51,6 +54,85 @@ function checkWinner(){
 
         // reset the game after 2 s delay
         setTimeout(resetGame,2000);
+    }
+}
+
+function bestMove(){
+    if (gameState === 0) return;
+    
+    let bestScore = -Infinity;
+    let move;
+    let score = 0;
+
+    for(let i=0;i<state.length; i++){
+        if(state[i]===''){
+            state[i] = 'O';
+            score = minimax(state,false,0);
+            // console.log('Score:',score);
+            state[i] = '';
+
+            if(score>bestScore){
+                bestScore = score;
+                move = i;
+            }
+        }
+    }
+    state[move] = 'O';
+    cells[move].setAttribute('data-player', 'O');
+    checkWinner()
+    renderBoard();
+    currentPlayer = 'X'
+}
+
+let getScore = {
+    'X':-1,
+    'O':1,
+    null:0
+}
+
+function minimax(state, ismaximising, depth){
+    let win = getWinner(state), score;
+    if(win !== null){
+        score = getScore[state[win[0]]];
+        return score;
+    }
+
+    if(!state.includes('')){
+        return 0;
+    }
+
+    // if it is AI's turn: maximise --> go fo highest score
+    if(ismaximising){
+        let bestScore = -Infinity;
+        // score = 0;
+        for(let i=0;i<state.length;i++){
+            if(state[i]===''){
+                state[i] = 'O'// ai
+                let score = minimax(state,false,depth+1);
+                state[i]='';
+
+                bestScore = Math.max(score,bestScore)
+            }
+        }
+        // console.log('Best Max Score:',bestScore);
+        return bestScore;
+    }
+    
+    // if it is player's turn: minimise -> go for lowest score
+    else{
+        // score = 0;
+        let bestScore = Infinity;
+        for(let i=0;i<state.length;i++){
+            if(state[i]===''){
+                state[i] = 'X'// ai
+                let score = minimax(state,true,depth+1);
+                state[i]='';
+                
+                bestScore = Math.min(score,bestScore)
+            }
+        }
+        // console.log('Best Min Score:',bestScore);
+        return bestScore;
     }
 }
 
@@ -93,25 +175,21 @@ document.addEventListener('DOMContentLoaded',() =>{
     cells = document.querySelectorAll(".cell"); // load cell states
     cells.forEach((cell,index) => {
         cell.addEventListener('click',() => {
-
             // prevent overwriting a cell
-            if(gameState ===0 || state[index] !== '') return
+            if(gameState ===0 || state[index] || currentPlayer === 'O') return
             
             // Update the cell state and current player
-            state[index] = currentPlayer
-            cell.setAttribute('data-player', currentPlayer);
-            currentPlayer = currentPlayer === "X"? "O" : "X";
+            state[index] = 'X'
+            cell.setAttribute('data-player', 'X');
             cell.disabled = true;
-
+            currentPlayer = 'X';
             // Check th eboard state. update board if in non terminal state
             checkWinner();
+            setTimeout(bestMove,0);
         })
     });
-
     // bind reset button to function
-    document.getElementById('reset-button').addEventListener('click',()=>{
-        resetGame();
-    });
+    document.getElementById('reset-button').addEventListener('click',resetGame);
 
     // Ensure fresh start for game
     resetGame();
