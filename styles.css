@@ -103,8 +103,7 @@
     color: black;
     animation: tie .7s ease-in-out infinite;
 }
-
-
+/* Animations */
 @keyframes win {
     from {background-color: white;}
     to   {background-color: #15e38a;}
