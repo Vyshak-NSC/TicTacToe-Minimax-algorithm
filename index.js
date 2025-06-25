@@ -1,7 +1,10 @@
 let state = Array(9).fill('');
 let cells;
-let currentPlayer = 'X'
-let message = document.getElementById('message')
+const PLAYER = 'X'
+const COMPUTER = 'O'
+let currentPlayer = PLAYER
+let message = document.getElementById('message');
+
 gameState = 1; // playable
 
 const wincombo =[
@@ -37,7 +40,7 @@ function resetGame(){
         cell.setAttribute('data-player','');
         cell.checked = false;
         cell.disabled = false;
-        cell.classList.remove('winner-x','winner-o','draw');
+        cell.classList.remove('winner-player','winner-computer','draw');
     });
 
     // Reet the game state
@@ -55,9 +58,11 @@ function getWinner(board){
 
 // Check the boaerd state for winner
 function checkWinner(){
-    // checking if game is in terminal state  
-    if(gameState === 0) return; // game over, do nothing 
-    const winner = getWinner(state);
+    // checking if game is in terminal state
+    if(gameState === 0) return; // if game over, do nothing 
+    const winner = getWinner(state); // if not, check find winner
+
+    // in case of a winner or draw, disable the board
     if(winner || !state.includes('')){
         gameState = 0; // game over
         disableBoard();
@@ -66,7 +71,7 @@ function checkWinner(){
             announceMsg(`Player ${state[winner[0]]} wins!`);
             winner.forEach(index => {
                 // add appropriate highlight for win case of X or O
-                cells[index].classList.add(state[index] === 'X' ? 'winner-x' : 'winner-o');
+                cells[index].classList.add(state[index] === PLAYER ? 'winner-player' : 'winner-computer');
             })
         }else{
             announceMsg("It's a Draw!");
@@ -98,40 +103,43 @@ function bestMove(){
     // declared locally to prevent scope errors
     let bestScore = -Infinity;
     let move;
-    // let score = 0;
 
     for(let i=0;i<state.length; i++){
         if(state[i]===''){
             // add a simulated value, remove after minimax result for index has been obtained
-            state[i] = 'O';
+            state[i] = COMPUTER;
             let score = minimax(state,false,0, -Infinity, Infinity);
             state[i] = '';
 
+            // assign bestsccore and best move
             if(score>bestScore){
                 bestScore = score;
                 move = i;
             }
         }
     }
+    // add delay to give feeling of thinking
     setTimeout(() => {
-        state[move] = 'O';
+        state[move] = COMPUTER;
         checkWinner()
         renderBoard();
-        currentPlayer = 'X'
+        currentPlayer = PLAYER;
     },500)
 }
 
 // track score assignement for minimax
 let getScore = {
-    'X':-1,
-    'O':1,
-    null:0
+    [PLAYER]  :-1,
+    [COMPUTER]:1,
+    null      :0
 }
 
 function minimax(state, ismaximising, depth, alpha, beta){
     let win = getWinner(state), score;
+
+    // check for non null(tie) terminal state
     if(win !== null){
-        score = getScore[state[win[0]]];
+        score = getScore[state[win[0]]] * (10 - depth); // score is multiplied by 10 - depth to give more weight to early wins
         return score;
     }
     // check for draw
@@ -139,12 +147,16 @@ function minimax(state, ismaximising, depth, alpha, beta){
         return 0;
     }
 
+    // Note:
+    // alpha tracks best case of computer : maximise -> -Infinity to max score
+    // beta track best case of player     : minimise ->  Infinity to min score
+
     // if it is AI's turn: maximise --> go fo highest score
     if(ismaximising){
         let bestScore = -Infinity;
         for(let i=0;i<state.length;i++){
             if(state[i]===''){
-                state[i] = 'O'// ai
+                state[i] = COMPUTER// ai
                 let score = minimax(state,false,depth+1, alpha, beta);
                 state[i]='';
                 bestScore = Math.max(score,bestScore)
@@ -163,7 +175,7 @@ function minimax(state, ismaximising, depth, alpha, beta){
         let bestScore = Infinity;
         for(let i=0;i<state.length;i++){
             if(state[i]===''){
-                state[i] = 'X'// ai
+                state[i] = PLAYER// ai
                 let score = minimax(state,true,depth+1, alpha, beta);
                 state[i]='';
                 // calculate alpha-beta pruning
@@ -183,13 +195,17 @@ document.addEventListener('DOMContentLoaded',() =>{
     cells.forEach((cell,index) => {
         cell.addEventListener('click',() => {
             // prevent overwriting a cell
-            if(gameState ===0 || state[index] || currentPlayer === 'O') return
+            if(gameState ===0 || state[index] || currentPlayer === COMPUTER){
+                cell.checked = false; // uncheck the cell for multi click
+                return;
+        }
             
             // Update the cell state and current player
-            state[index] = 'X'
-            cell.setAttribute('data-player', 'X');
+            state[index] = PLAYER
+            cell.setAttribute('data-player', PLAYER);
             cell.disabled = true;
-            currentPlayer = 'X';
+            currentPlayer = COMPUTER;
+
             // Check th eboard state. update board if in non terminal state
             checkWinner();
             setTimeout(bestMove,0);
