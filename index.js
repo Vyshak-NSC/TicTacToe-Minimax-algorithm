@@ -116,12 +116,14 @@ function bestMove(){
             }
         }
     }
+
+    // add a delay to give feeling of thinking
     setTimeout(() => {
         state[move] = COMPUTER;
         checkWinner()
         renderBoard();
         currentPlayer = PLAYER
-    },500)
+    },400)
 }
 
 // track score assignement for minimax
@@ -161,13 +163,16 @@ document.addEventListener('DOMContentLoaded',() =>{
     cells.forEach((cell,index) => {
         cell.addEventListener('click',() => {
             // prevent overwriting a cell
-            if(gameState ===0 || state[index] || currentPlayer === COMPUTER) return
+            if(gameState ===0 || state[index] || currentPlayer === COMPUTER){
+                cell.checked = false;
+                return
+            }
             
             // Update the cell state and current player
             state[index] = PLAYER
             cell.setAttribute('data-player', PLAYER);
             cell.disabled = true;
-            currentPlayer = PLAYER;
+            currentPlayer = COMPUTER;
             // Check th eboard state. update board if in non terminal state
             checkWinner();
             setTimeout(bestMove,0);
