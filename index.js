@@ -133,18 +133,33 @@ let getScore = {
     null:0
 }
 
-
 function negamax(state, depth, alpha, beta, color){
     let win = getWinner(state);
+    
+    // check for terminal state
     if(win!==null){
+        // use depth to adjust score, ensuring early win priority
         return color * (getScore[state[win[0]]] * (10 - depth));
     }
+    // check for draw
     if(!state.includes('')) return 0;
 
+    // Notes:
+    // color ==  1: Computer's turn
+    // color == -1: player's turn
+    // color == 0 : draw
+    
+    // alpha beta pruning
+    // alpha tracks computer's best score
+    // beta tracks player's best score
     let bestScore = -Infinity;
+
     for(let i = 0;i < state.length; i++){
         if(state[i] === ''){
+            // assign a simulated value to the cell
             state[i] = color === 1 ? COMPUTER : PLAYER;
+            // inverse the maximising function to obtain opponent's score
+            // swap alpha beta value, inverse alpha, beta and color
             let score = -negamax(state, depth+1, -beta, -alpha, -color);
             state[i] = '';
             bestScore = Math.max(score, bestScore);
