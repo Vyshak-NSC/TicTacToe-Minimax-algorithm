@@ -90,11 +90,11 @@
     content: attr(data-player);
 }
 
-.winner-x{
+.winner-player{
     color: white;
     animation: win 0.7s ease-in-out infinite;
 }
-.winner-o{
+.winner-computer{
     color: black;
     animation: loose .7s ease-in-out infinite;
 }
